@@ -3,47 +3,32 @@ import json
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 import os
-import speech_recognition as sr  # For voice-to-text
+import speech_recognition as sr
 
 # Load environment variables
 load_dotenv()
-
-# Retrieve the API key from the .env file
 api_key = os.getenv("API_KEY")
 
-# Load personal data from a JSON file
+# Load JSON data
 with open("data.json") as f:
     personal_data = json.load(f)
 
-# Initialize the OpenAI model
+# Initialize OpenAI model
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=api_key)
 
-# Initialize chat history in session state
+# Initialize session state for chat history
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {
-            "role": "system",
-            "content": (
-                "You are an AI chatbot designed to assist users with the e-Ambulance system. "
-                "You can answer questions based on the following JSON data: "
-                f"{personal_data}. If a question is not related to the JSON data, respond with: "
-                "'I am sorry, I can only answer questions related to the e-Ambulance system.'"
-            ),
-        },
-        {
-            "role": "assistant",
-            "content": "Hello! How can I assist you today? 😊"
-        }
+        {"role": "system", "content": "You are a helpful e-Ambulance chatbot."},
+        {"role": "assistant", "content": "Hello! How can I assist you today? 😊"}
     ]
 
-# Custom CSS for the UI
+# Custom CSS for improved UI
 st.markdown("""
     <style>
         body {
             font-family: 'Arial', sans-serif;
             background-color: #fef7f7;
-            margin: 0;
-            padding: 0;
         }
         .title-container {
             text-align: center;
@@ -53,23 +38,23 @@ st.markdown("""
             color: black;
             font-size: 26px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         .description {
             text-align: center;
-            font-size: 16px;
-            margin-bottom: 15px;
+            font-size: 14px;
+            margin-bottom: 10px;
             color: #333;
         }
         .chat-container {
-            max-width: 800px;
-            margin: 20px auto;
+            max-width: 700px;
+            margin: 0 auto;
             border-radius: 15px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
             height: 65vh;
-            background: white;
-            padding: 10px;
             overflow-y: auto;
+            background-color: #fff;
+            padding: 10px;
         }
         .message {
             display: flex;
@@ -87,7 +72,7 @@ st.markdown("""
         .bubble {
             padding: 12px 15px;
             border-radius: 15px;
-            font-size: 15px;
+            font-size: 14px;
             max-width: 60%;
             box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
         }
@@ -102,30 +87,31 @@ st.markdown("""
             text-align: left;
         }
         .input-container {
-            position: absolute;
+            position: fixed;
             bottom: 0;
-            width: 100%;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: center;
+            left: 0;
+            right: 0;
+            padding: 10px 15px;
             background-color: white;
+            display: flex;
+            align-items: center;
+            box-shadow: 0px -1px 5px rgba(0, 0, 0, 0.1);
         }
-        .input-box {
-            width: 70%;
+        .input-container input {
+            flex: 1;
             border: none;
             padding: 12px;
             border-radius: 20px;
             margin-right: 10px;
             background-color: #fff5f5;
-            font-size: 16px;
         }
-        .icon-button {
+        .input-container button {
             background-color: #ff8ba7;
             color: white;
             border: none;
             border-radius: 50%;
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -146,11 +132,11 @@ with st.sidebar:
             if st.button(message["content"][:20] + "...", key=f"history_{i}"):
                 st.session_state.selected_message = message["content"]
 
-# Chat Interface
+# Chat interface container
 st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
 
-# Display messages
-for message in st.session_state.messages[1:]:  # Skip the system message
+# Display chat messages
+for message in st.session_state.messages:
     if message["role"] == "user":
         st.markdown(
             f"<div class='message user-message'><div class='bubble'>{message['content']}</div></div>",
@@ -164,7 +150,7 @@ for message in st.session_state.messages[1:]:  # Skip the system message
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Voice-to-text functionality
+# Function to convert voice to text
 def voice_to_text():
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
@@ -178,36 +164,33 @@ def voice_to_text():
             st.toast("Timeout: No speech detected.")
             return None
         except sr.UnknownValueError:
-            st.toast("Sorry, I could not understand the audio.")
+            st.toast("Sorry, I couldn't understand the audio.")
             return None
         except sr.RequestError as e:
-            st.toast(f"Error with the speech recognition service: {e}")
+            st.toast(f"Error: {e}")
             return None
 
-# Input handler
+# Handle text input
 def handle_input():
     user_input = st.session_state.get("user_input", "").strip()
     if user_input:
         st.session_state.messages.append({"role": "user", "content": user_input})
 
-        # Handle custom greetings and questions
-        if "hello" in user_input.lower():
-            response = "Hello there! How can I assist you today? 😊"
-        elif "name" in user_input.lower():
-            response = "Yes, I remember your name is Ayesha. How can I guide you further?"
+        # Intelligent responses based on keywords
+        if "name" in user_input.lower():
+            response = f"Hello {user_input.split()[-1]}! How can I help you? 😊"
         elif "help" in user_input.lower():
             response = "I'm here to help! Please tell me more so I can assist you better. 😊"
+        elif "hello" in user_input.lower():
+            response = "Hi there! How can I assist you today? 😊"
         else:
-            # Default response if unrelated to JSON data
             response = "I am sorry, I can only answer questions related to the e-Ambulance system."
 
-        # Add the response to the chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.session_state.user_input = ""  # Clear the input field
 
-# Input container
+# Input container at the bottom
 st.markdown("<div class='input-container'>", unsafe_allow_html=True)
-
 col1, col2, col3 = st.columns([8, 1, 1])
 
 with col1:
@@ -231,6 +214,8 @@ with col3:
         handle_input()
 
 st.markdown("</div>", unsafe_allow_html=True)
+
+
 
 
 
