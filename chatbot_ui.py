@@ -25,7 +25,7 @@ if "messages" not in st.session_state:
             "role": "system",
             "content": (
                 "You are an AI chatbot designed to assist users with the e-Ambulance system. "
-                "You can  answer questions based on the following JSON data: "
+                "You can answer questions based on the following JSON data: "
                 f"{personal_data}. If a question is not related to the JSON data, respond with: "
                 "'I am sorry, I can only answer questions related to the e-Ambulance system.'"
             ),
@@ -35,7 +35,6 @@ if "messages" not in st.session_state:
             "content": "Hello! How can I assist you?"
         }
     ]
-
 
 # Custom CSS for the UI
 st.markdown("""
@@ -174,8 +173,8 @@ def voice_to_text():
     with sr.Microphone() as source:
         st.toast("Listening... Speak now!")
         try:
-            recognizer.adjust_for_ambient_noise(source)  # Adjust for ambient noise
-            audio = recognizer.listen(source, timeout=5)  # Wait for up to 5 seconds
+            recognizer.adjust_for_ambient_noise(source)
+            audio = recognizer.listen(source, timeout=5)
             text = recognizer.recognize_google(audio)
             return text
         except sr.WaitTimeoutError:
@@ -188,34 +187,27 @@ def voice_to_text():
             st.toast(f"Error with the speech recognition service: {e}")
             return None
 
-# Input handler for restricting responses to JSON-related questions
+# Input handler for restricting responses to JSON-related questions and basic interactions
 def handle_input():
     user_input = st.session_state.get("user_input", "").strip()
     if user_input:
         st.session_state.messages.append({"role": "user", "content": user_input})
 
-        # Check if the user's query matches any part of the JSON data
-        if any(user_input.lower() in str(value).lower() for value in personal_data.values()):
-            # If the query matches the JSON data, invoke the AI to generate a response
+        if "hello" in user_input.lower() or "hi" in user_input.lower():
+            response = "Hello! How can I assist you today?"
+        elif "name" in user_input.lower() and "help" in user_input.lower():
+            name = user_input.split("is")[-1].strip() if "is" in user_input else "user"
+            response = f"Hello {name}, how can I help you? I am here to guide you!"
+        elif any(user_input.lower() in str(value).lower() for value in personal_data.values()):
             response = llm.invoke(st.session_state.messages).content
         else:
-            # Otherwise, return a predefined response
             response = "I am sorry, I can only answer questions related to the e-Ambulance system."
 
-        # Add the response to the chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
-        st.session_state.user_input = ""  # Clear the input field
+        st.session_state.user_input = ""
 
 # Input container
 st.markdown("<div class='input-container'>", unsafe_allow_html=True)
-
-def handle_input():
-    user_input = st.session_state.get("user_input", "")
-    if user_input.strip():  # Check if input is not empty
-        st.session_state.messages.append({"role": "user", "content": user_input})
-        response = llm.invoke(st.session_state.messages).content
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        st.session_state.user_input = ""  # Clear the input field
 
 col1, col2, col3 = st.columns([8, 1, 1])
 
@@ -225,7 +217,7 @@ with col1:
         placeholder="Type your message here...",
         key="user_input",
         label_visibility="collapsed",
-        on_change=handle_input,  # Trigger input handling when Enter is pressed
+        on_change=handle_input,
     )
 
 with col2:
@@ -237,7 +229,7 @@ with col2:
             st.session_state.messages.append({"role": "assistant", "content": response})
 
 with col3:
-    if st.button("🩺"):  # Replace the arrow icon with an ambulance-themed icon
+    if st.button("🩺"):
         handle_input()
 
 st.markdown("</div>", unsafe_allow_html=True)
