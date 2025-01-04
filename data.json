@@ -1,0 +1,130 @@
+{
+    "app_info": {
+        "name": "1122 E-Ambulance Booking",
+        "description": "A government-affiliated app for free ambulance bookings based on patient critical levels, ensuring timely and efficient emergency medical services.",
+        "contact_email": "support@eambulance.gov",
+        "contact_phone": "+123-456-7890",
+        "support_hours": "24/7",
+        "website": "www.eambulance.gov"
+    },
+    "ambulance_types": [
+        {
+            "id": 1,
+            "type": "Basic Ambulance",
+            "description": "For non-critical patients requiring simple transport to medical facilities.",
+            "availability_status": "Available",
+            "facilities": ["Stretcher", "First Aid Kit", "Basic Oxygen Cylinder"],
+            "region_coverage": ["City Center", "Suburban Areas", "Rural Areas"]
+        },
+        {
+            "id": 2,
+            "type": "Advanced Life Support (ALS)",
+            "description": "For patients requiring continuous medical monitoring during transit.",
+            "availability_status": "Available",
+            "facilities": ["Defibrillator", "Cardiac Monitor", "Ventilator", "Medications", "Intravenous Therapy"],
+            "region_coverage": ["City Center", "Outer City", "Highways"]
+        },
+        {
+            "id": 3,
+            "type": "Critical Care Ambulance",
+            "description": "For highly critical patients requiring ICU-level support during transport.",
+            "availability_status": "Unavailable",
+            "facilities": ["Portable ICU", "Medical Staff", "Ventilator", "Advanced Medications", "Blood Transfusion Equipment"],
+            "region_coverage": ["All Regions"]
+        },
+        {
+            "id": 4,
+            "type": "Neonatal Ambulance",
+            "description": "Specialized ambulance for transporting newborns and infants in need of medical care.",
+            "availability_status": "Available",
+            "facilities": ["Neonatal Incubator", "Infant Ventilator", "Nurse", "Advanced Medications"],
+            "region_coverage": ["City Center", "Maternity Hospitals"]
+        }
+    ],
+    "recent_bookings": [
+        {
+            "booking_id": "BK001",
+            "patient_name": "John Doe",
+            "ambulance_type": "Advanced Life Support (ALS)",
+            "critical_level": "Moderate",
+            "pickup_location": "123 Main Street",
+            "destination_hospital": "City General Hospital",
+            "status": "Completed",
+            "time_of_request": "2024-12-29T08:30:00",
+            "estimated_arrival": "2024-12-29T08:50:00"
+        },
+        {
+            "booking_id": "BK002",
+            "patient_name": "Jane Smith",
+            "ambulance_type": "Critical Care Ambulance",
+            "critical_level": "High",
+            "pickup_location": "456 Elm Avenue",
+            "destination_hospital": "Central ICU Hospital",
+            "status": "Cancelled",
+            "time_of_request": "2024-12-29T09:15:00",
+            "estimated_arrival": "2024-12-29T09:35:00"
+        },
+        {
+            "booking_id": "BK003",
+            "patient_name": "Michael Brown",
+            "ambulance_type": "Basic Ambulance",
+            "critical_level": "Low",
+            "pickup_location": "789 Oak Road",
+            "destination_hospital": "Suburban Clinic",
+            "status": "In Progress",
+            "time_of_request": "2024-12-29T10:00:00",
+            "estimated_arrival": "2024-12-29T10:20:00"
+        },
+        {
+            "booking_id": "BK004",
+            "patient_name": "Emily White",
+            "ambulance_type": "Neonatal Ambulance",
+            "critical_level": "High",
+            "pickup_location": "100 Green Street",
+            "destination_hospital": "City Maternity Hospital",
+            "status": "In Progress",
+            "time_of_request": "2024-12-29T11:00:00",
+            "estimated_arrival": "2024-12-29T11:30:00"
+        }
+    ],
+    "user_feedback": [
+        {
+            "booking_id": "BK001",
+            "patient_name": "John Doe",
+            "feedback_rating": 5,
+            "comments": "The ambulance arrived on time and the ALS team provided excellent care during transport."
+        },
+        {
+            "booking_id": "BK002",
+            "patient_name": "Jane Smith",
+            "feedback_rating": 2,
+            "comments": "The ambulance was not available at the time of booking, and the booking was cancelled without prior notice."
+        },
+        {
+            "booking_id": "BK003",
+            "patient_name": "Michael Brown",
+            "feedback_rating": 4,
+            "comments": "The service was good, but the waiting time could have been shorter."
+        }
+    ],
+    "app_updates": [
+        {
+            "update_version": "v2.1.0",
+            "release_date": "2024-12-20",
+            "changes": [
+                "Added Neonatal Ambulance option for infant care.",
+                "Improved user interface for booking process.",
+                "Enhanced notification system for real-time updates."
+            ]
+        },
+        {
+            "update_version": "v2.0.0",
+            "release_date": "2024-11-15",
+            "changes": [
+                "Introduced real-time ambulance tracking feature.",
+                "Added feedback system for users to rate services.",
+                "Fixed minor bugs in booking confirmation process."
+            ]
+        }
+    ]
+}
