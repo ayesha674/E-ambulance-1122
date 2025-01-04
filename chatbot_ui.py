@@ -25,7 +25,7 @@ if "messages" not in st.session_state:
             "role": "system",
             "content": (
                 "You are an AI chatbot designed to assist users with the e-Ambulance system. "
-                "You can only answer questions based on the following JSON data: "
+                "You can  answer questions based on the following JSON data: "
                 f"{personal_data}. If a question is not related to the JSON data, respond with: "
                 "'I am sorry, I can only answer questions related to the e-Ambulance system.'"
             ),
