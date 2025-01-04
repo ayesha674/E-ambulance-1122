@@ -38,21 +38,21 @@ st.markdown("""
             color: black;
             font-size: 26px;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
         .description {
             text-align: center;
             font-size: 14px;
             color: #333;
             margin: 0;
-            padding-bottom: 10px;
+            padding: 5px 0;
         }
         .chat-container {
             max-width: 700px;
             margin: 0 auto;
             border-radius: 15px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            height: 65vh;
+            height: calc(100vh - 250px);  /* Dynamic height adjustment */
             overflow-y: auto;
             background-color: #fff;
             padding: 10px;
