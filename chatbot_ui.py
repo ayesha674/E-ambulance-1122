@@ -32,7 +32,7 @@ if "messages" not in st.session_state:
         },
         {
             "role": "assistant",
-            "content": "Hello! How can I assist you?"
+            "content": "Hello! How can I assist you today?"
         }
     ]
 
@@ -110,16 +110,17 @@ st.markdown("""
             bottom: 0;
             left: 0;
             right: 0;
-            padding: 10px 15px;
+            padding: 10px;
             display: flex;
+            gap: 10px;
             align-items: center;
+            justify-content: center;
         }
         .input-container input {
             flex: 1;
             border: none;
-            padding: 10px;
+            padding: 10px 15px;
             border-radius: 20px;
-            margin-right: 10px;
             background-color: #fff5f5;
         }
         .input-container button {
@@ -133,6 +134,14 @@ st.markdown("""
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            margin: 0;
+        }
+        .input-container .text-input {
+            max-width: 70%;
+        }
+        .input-container .icon-buttons {
+            display: flex;
+            gap: 5px;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -173,8 +182,8 @@ def voice_to_text():
     with sr.Microphone() as source:
         st.toast("Listening... Speak now!")
         try:
-            recognizer.adjust_for_ambient_noise(source)
-            audio = recognizer.listen(source, timeout=5)
+            recognizer.adjust_for_ambient_noise(source)  # Adjust for ambient noise
+            audio = recognizer.listen(source, timeout=5)  # Wait for up to 5 seconds
             text = recognizer.recognize_google(audio)
             return text
         except sr.WaitTimeoutError:
@@ -187,29 +196,33 @@ def voice_to_text():
             st.toast(f"Error with the speech recognition service: {e}")
             return None
 
-# Input handler for restricting responses to JSON-related questions and basic interactions
+# Input handler for restricting responses to JSON-related questions
 def handle_input():
-    user_input = st.session_state.get("user_input", "").strip()
+    user_input = st.session_state.get("user_input", "").strip().lower()
     if user_input:
         st.session_state.messages.append({"role": "user", "content": user_input})
 
-        if "hello" in user_input.lower() or "hi" in user_input.lower():
-            response = "Hello! How can I assist you today?"
-        elif "name" in user_input.lower() and "help" in user_input.lower():
-            name = user_input.split("is")[-1].strip() if "is" in user_input else "user"
-            response = f"Hello {name}, how can I help you? I am here to guide you!"
-        elif any(user_input.lower() in str(value).lower() for value in personal_data.values()):
+        # Check for common introductions or help requests
+        if "my name is" in user_input:
+            name = user_input.split("my name is")[-1].strip().capitalize()
+            response = f"Hello {name}! How can I assist you today?"
+        elif "help" in user_input or "i need your help" in user_input:
+            response = "I’m here to help you! Please tell me how I can assist you."
+        elif any(user_input in str(value).lower() for value in personal_data.values()):
+            # If the query matches the JSON data, invoke the AI to generate a response
             response = llm.invoke(st.session_state.messages).content
         else:
+            # Default response if the input does not match JSON data or specific keywords
             response = "I am sorry, I can only answer questions related to the e-Ambulance system."
 
+        # Add the response to the chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
-        st.session_state.user_input = ""
+        st.session_state.user_input = ""  # Clear the input field
 
 # Input container
 st.markdown("<div class='input-container'>", unsafe_allow_html=True)
 
-col1, col2, col3 = st.columns([8, 1, 1])
+col1, col2, col3 = st.columns([10, 1, 1])
 
 with col1:
     st.text_input(
@@ -217,7 +230,7 @@ with col1:
         placeholder="Type your message here...",
         key="user_input",
         label_visibility="collapsed",
-        on_change=handle_input,
+        on_change=handle_input,  # Trigger input handling when Enter is pressed
     )
 
 with col2:
@@ -225,8 +238,7 @@ with col2:
         user_input = voice_to_text()
         if user_input:
             st.session_state.messages.append({"role": "user", "content": user_input})
-            response = llm.invoke(st.session_state.messages).content
-            st.session_state.messages.append({"role": "assistant", "content": response})
+            handle_input()
 
 with col3:
     if st.button("🩺"):
