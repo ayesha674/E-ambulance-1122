@@ -52,7 +52,7 @@ st.markdown("""
             margin: 0 auto;
             border-radius: 15px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            height: calc(100vh - 250px);  /* Dynamic height adjustment */
+            height: calc(100vh - 200px);  /* Fill most of the height dynamically */
             overflow-y: auto;
             background-color: #fff;
             padding: 10px;
@@ -215,10 +215,5 @@ with col3:
         handle_input()
 
 st.markdown("</div>", unsafe_allow_html=True)
-
-
-
-
-
 
 
