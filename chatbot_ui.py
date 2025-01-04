@@ -41,9 +41,6 @@ st.markdown("""
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #fef7f7;
-            margin: 0;
-            padding: 0;
         }
         .title-container {
             text-align: center;
@@ -66,9 +63,8 @@ st.markdown("""
             margin: 0 auto;
             border-radius: 15px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            height: auto;
-            padding: 0;
-            background: none;
+            padding: 20px;
+            background-color: white;
         }
         .message {
             display: flex;
@@ -77,18 +73,16 @@ st.markdown("""
         }
         .user-message {
             justify-content: flex-end;
-            margin-left: auto;
         }
         .assistant-message {
             justify-content: flex-start;
-            margin-right: auto;
         }
         .bubble {
             padding: 12px 15px;
             border-radius: 15px;
             font-size: 14px;
             max-width: 60%;
-            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 5px 0;
         }
         .user-message .bubble {
             background-color: #fff5f5;
@@ -100,33 +94,26 @@ st.markdown("""
             color: black;
             text-align: left;
         }
-        .icon {
-            width: 30px;
-            height: 30px;
-            margin: 5px;
-        }
         .input-container {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            padding: 10px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            justify-content: center;
+            background-color: #fff5f5;
         }
         .input-container input {
             flex: 1;
-            border: none;
-            padding: 10px 15px;
+            padding: 10px;
             border-radius: 20px;
-            background-color: #fff5f5;
+            border: 1px solid #ddd;
         }
         .input-container button {
+            border: none;
             background-color: #ff8ba7;
             color: white;
-            border: none;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -134,45 +121,23 @@ st.markdown("""
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            margin: 0;
-        }
-        .input-container .text-input {
-            max-width: 70%;
-        }
-        .input-container .icon-buttons {
-            display: flex;
-            gap: 5px;
         }
     </style>
 """, unsafe_allow_html=True)
 
 # Title and description
-st.markdown("<div class='title-container'> E-Ambulance 1122</div>", unsafe_allow_html=True)
-st.markdown("<div class='description'>This chatbot is for your convenience. Feel free to ask anything.</div>", unsafe_allow_html=True)
-
-# Sidebar for chat history
-with st.sidebar:
-    st.markdown("### Chat History")
-    for i, message in enumerate(st.session_state.messages):
-        if message["role"] == "user":
-            if st.button(message["content"][:20] + "...", key=f"history_{i}"):
-                st.session_state.selected_message = message["content"]
+st.markdown("<div class='title-container'> E-Ambulance 1122 Chatbot</div>", unsafe_allow_html=True)
+st.markdown("<div class='description'>This chatbot is designed to assist you. Feel free to ask anything!</div>", unsafe_allow_html=True)
 
 # Chat Interface
 st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
 
-# Display messages
-for message in st.session_state.messages[1:]:  # Skip system message
+# Display chat history
+for message in st.session_state.messages[1:]:
     if message["role"] == "user":
-        st.markdown(
-            f"<div class='message user-message'><div class='bubble'>{message['content']}</div><img src='https://img.icons8.com/color/48/000000/ambulance.png' class='icon'></div>",
-            unsafe_allow_html=True,
-        )
+        st.markdown(f"<div class='message user-message'><div class='bubble'>{message['content']}</div></div>", unsafe_allow_html=True)
     elif message["role"] == "assistant":
-        st.markdown(
-            f"<div class='message assistant-message'><img src='https://img.icons8.com/color/48/000000/robot.png' class='icon'><div class='bubble'>{message['content']}</div></div>",
-            unsafe_allow_html=True,
-        )
+        st.markdown(f"<div class='message assistant-message'><div class='bubble'>{message['content']}</div></div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -182,8 +147,8 @@ def voice_to_text():
     with sr.Microphone() as source:
         st.toast("Listening... Speak now!")
         try:
-            recognizer.adjust_for_ambient_noise(source)  # Adjust for ambient noise
-            audio = recognizer.listen(source, timeout=5)  # Wait for up to 5 seconds
+            recognizer.adjust_for_ambient_noise(source)
+            audio = recognizer.listen(source, timeout=5)
             text = recognizer.recognize_google(audio)
             return text
         except sr.WaitTimeoutError:
@@ -193,31 +158,40 @@ def voice_to_text():
             st.toast("Sorry, I could not understand the audio.")
             return None
         except sr.RequestError as e:
-            st.toast(f"Error with the speech recognition service: {e}")
+            st.toast(f"Error: {e}")
             return None
 
-# Input handler for restricting responses to JSON-related questions
+# Input handler for custom responses
 def handle_input():
     user_input = st.session_state.get("user_input", "").strip().lower()
     if user_input:
         st.session_state.messages.append({"role": "user", "content": user_input})
 
-        # Check for common introductions or help requests
-        if "my name is" in user_input:
+        # Custom greeting response
+        greetings = ["hello", "hi", "hey", "good morning", "good afternoon", "good evening"]
+        if any(greet in user_input for greet in greetings):
+            response = "Hello! How can I assist you today? 😊"
+
+        # Name introduction handling
+        elif "my name is" in user_input:
             name = user_input.split("my name is")[-1].strip().capitalize()
-            response = f"Hello {name}! How can I assist you today?"
+            response = f"Hello {name}! I’m here to guide you. How can I assist you? 😊"
+
+        # General help request
         elif "help" in user_input or "i need your help" in user_input:
-            response = "I’m here to help you! Please tell me how I can assist you."
+            response = "I’m here to help you! Please let me know how I can assist. 🚑"
+
+        # JSON-based query handling
         elif any(user_input in str(value).lower() for value in personal_data.values()):
-            # If the query matches the JSON data, invoke the AI to generate a response
             response = llm.invoke(st.session_state.messages).content
+
+        # Default response for unrecognized queries
         else:
-            # Default response if the input does not match JSON data or specific keywords
-            response = "I am sorry, I can only answer questions related to the e-Ambulance system."
+            response = "I’m sorry, I can only answer questions related to the e-Ambulance system."
 
         # Add the response to the chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
-        st.session_state.user_input = ""  # Clear the input field
+        st.session_state.user_input = ""  # Clear input field
 
 # Input container
 st.markdown("<div class='input-container'>", unsafe_allow_html=True)
@@ -230,7 +204,7 @@ with col1:
         placeholder="Type your message here...",
         key="user_input",
         label_visibility="collapsed",
-        on_change=handle_input,  # Trigger input handling when Enter is pressed
+        on_change=handle_input,
     )
 
 with col2:
@@ -245,3 +219,5 @@ with col3:
         handle_input()
 
 st.markdown("</div>", unsafe_allow_html=True)
+
+
