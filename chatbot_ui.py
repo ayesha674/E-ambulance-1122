@@ -3,7 +3,7 @@ import json
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 import os
-import re
+import speech_recognition as sr  # For voice-to-text
 
 # Load environment variables
 load_dotenv()
@@ -18,7 +18,7 @@ with open("data.json") as f:
 # Initialize the OpenAI model
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=api_key)
 
-# Initialize chat history and user name in session state
+# Initialize chat history in session state
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {
@@ -35,8 +35,6 @@ if "messages" not in st.session_state:
             "content": "Hello! How can I assist you today? 😊"
         }
     ]
-if "user_name" not in st.session_state:
-    st.session_state.user_name = None
 
 # Custom CSS for the UI
 st.markdown("""
@@ -53,24 +51,25 @@ st.markdown("""
             border-radius: 10px;
             background-color: #ffc0cb;
             color: black;
-            font-size: 22px;
+            font-size: 26px;
             font-weight: bold;
             margin-bottom: 10px;
         }
         .description {
             text-align: center;
-            font-size: 14px;
-            margin-bottom: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
             color: #333;
         }
         .chat-container {
-            max-width: 700px;
-            margin: 0 auto;
+            max-width: 800px;
+            margin: 20px auto;
             border-radius: 15px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            height: auto;
-            padding: 0;
-            background: none;
+            height: 65vh;
+            background: white;
+            padding: 10px;
+            overflow-y: auto;
         }
         .message {
             display: flex;
@@ -88,7 +87,7 @@ st.markdown("""
         .bubble {
             padding: 12px 15px;
             border-radius: 15px;
-            font-size: 14px;
+            font-size: 15px;
             max-width: 60%;
             box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
         }
@@ -102,35 +101,31 @@ st.markdown("""
             color: black;
             text-align: left;
         }
-        .icon {
-            width: 30px;
-            height: 30px;
-            margin: 5px;
-        }
         .input-container {
-            position: fixed;
+            position: absolute;
             bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 10px 15px;
+            width: 100%;
+            padding: 15px 20px;
             display: flex;
-            align-items: center;
+            justify-content: center;
+            background-color: white;
         }
-        .input-container input {
-            flex: 1;
+        .input-box {
+            width: 70%;
             border: none;
-            padding: 10px;
+            padding: 12px;
             border-radius: 20px;
             margin-right: 10px;
             background-color: #fff5f5;
+            font-size: 16px;
         }
-        .input-container button {
+        .icon-button {
             background-color: #ff8ba7;
             color: white;
             border: none;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -143,81 +138,99 @@ st.markdown("""
 st.markdown("<div class='title-container'>E-Ambulance 1122</div>", unsafe_allow_html=True)
 st.markdown("<div class='description'>This chatbot is for your convenience. Feel free to ask anything.</div>", unsafe_allow_html=True)
 
-# Function to extract the user's name
-def extract_name(user_input):
-    name_match = re.search(r"\bmy name is (\w+)", user_input, re.IGNORECASE)
-    if name_match:
-        return name_match.group(1)
-    return None
+# Sidebar for chat history
+with st.sidebar:
+    st.markdown("### Chat History")
+    for i, message in enumerate(st.session_state.messages):
+        if message["role"] == "user":
+            if st.button(message["content"][:20] + "...", key=f"history_{i}"):
+                st.session_state.selected_message = message["content"]
 
-# Input handler for processing user input and sending a response
+# Chat Interface
+st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
+
+# Display messages
+for message in st.session_state.messages[1:]:  # Skip the system message
+    if message["role"] == "user":
+        st.markdown(
+            f"<div class='message user-message'><div class='bubble'>{message['content']}</div></div>",
+            unsafe_allow_html=True,
+        )
+    elif message["role"] == "assistant":
+        st.markdown(
+            f"<div class='message assistant-message'><div class='bubble'>{message['content']}</div></div>",
+            unsafe_allow_html=True,
+        )
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+# Voice-to-text functionality
+def voice_to_text():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        st.toast("Listening... Speak now!")
+        try:
+            recognizer.adjust_for_ambient_noise(source)
+            audio = recognizer.listen(source, timeout=5)
+            text = recognizer.recognize_google(audio)
+            return text
+        except sr.WaitTimeoutError:
+            st.toast("Timeout: No speech detected.")
+            return None
+        except sr.UnknownValueError:
+            st.toast("Sorry, I could not understand the audio.")
+            return None
+        except sr.RequestError as e:
+            st.toast(f"Error with the speech recognition service: {e}")
+            return None
+
+# Input handler
 def handle_input():
     user_input = st.session_state.get("user_input", "").strip()
-
     if user_input:
         st.session_state.messages.append({"role": "user", "content": user_input})
 
-        # Handle greetings like "hello"
+        # Handle custom greetings and questions
         if "hello" in user_input.lower():
-            response = f"Hello {st.session_state.user_name or 'there'}! How can I assist you today? 😊"
-
-        # Handle name introduction
-        elif not st.session_state.user_name:
-            user_name = extract_name(user_input)
-            if user_name:
-                st.session_state.user_name = user_name.capitalize()
-                response = f"Hello {st.session_state.user_name}, I'm here to guide you. How can I assist you? 😊"
-            else:
-                response = "Hello! Please let me know how I can assist you."
-
-        # Handle help request
+            response = "Hello there! How can I assist you today? 😊"
+        elif "name" in user_input.lower():
+            response = "Yes, I remember your name is Ayesha. How can I guide you further?"
         elif "help" in user_input.lower():
             response = "I'm here to help! Please tell me more so I can assist you better. 😊"
-
-        # Handle name-related questions
-        elif "remember" in user_input.lower() and "name" in user_input.lower():
-            if st.session_state.user_name:
-                response = f"Yes, your name is {st.session_state.user_name}! 😊"
-            else:
-                response = "I don't know your name yet. Can you please tell me your name?"
-
         else:
-            # Check if the user's query matches any JSON data
-            if any(user_input.lower() in str(value).lower() for value in personal_data.values()):
-                response = llm.invoke(st.session_state.messages).content
-            else:
-                response = "I am sorry, I can only answer questions related to the e-Ambulance system."
+            # Default response if unrelated to JSON data
+            response = "I am sorry, I can only answer questions related to the e-Ambulance system."
 
-        # Add the assistant's response to the chat history
+        # Add the response to the chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.session_state.user_input = ""  # Clear the input field
 
-# Input container and buttons
+# Input container
 st.markdown("<div class='input-container'>", unsafe_allow_html=True)
-col1, col2, col3 = st.columns([10, 1, 1])
+
+col1, col2, col3 = st.columns([8, 1, 1])
 
 with col1:
-    st.text_input("", placeholder="Type your message here...", key="user_input", label_visibility="collapsed", on_change=handle_input)
+    st.text_input(
+        "",
+        placeholder="Type your message here...",
+        key="user_input",
+        label_visibility="collapsed",
+        on_change=handle_input,
+    )
 
 with col2:
     if st.button("🎙️"):
-        pass  # Placeholder for future voice input logic
+        user_input = voice_to_text()
+        if user_input:
+            st.session_state.messages.append({"role": "user", "content": user_input})
+            handle_input()
 
 with col3:
     if st.button("🩺"):
         handle_input()
 
 st.markdown("</div>", unsafe_allow_html=True)
-
-# Chat container
-st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
-for message in st.session_state.messages[1:]:  # Skip the system message
-    if message["role"] == "user":
-        st.markdown(f"<div class='message user-message'><div class='bubble'>{message['content']}</div></div>", unsafe_allow_html=True)
-    else:
-        st.markdown(f"<div class='message assistant-message'><div class='bubble'>{message['content']}</div></div>", unsafe_allow_html=True)
-st.markdown("</div>", unsafe_allow_html=True)
-
 
 
 
