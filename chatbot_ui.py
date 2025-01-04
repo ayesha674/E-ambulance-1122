@@ -32,19 +32,20 @@ st.markdown("""
         }
         .title-container {
             text-align: center;
-            padding: 15px;
+            padding: 10px 0px;
             border-radius: 10px;
             background-color: #ffc0cb;
             color: black;
             font-size: 26px;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
         }
         .description {
             text-align: center;
             font-size: 14px;
-            margin-bottom: 10px;
             color: #333;
+            margin: 0;
+            padding-bottom: 10px;
         }
         .chat-container {
             max-width: 700px;
@@ -214,6 +215,8 @@ with col3:
         handle_input()
 
 st.markdown("</div>", unsafe_allow_html=True)
+
+
 
 
 
