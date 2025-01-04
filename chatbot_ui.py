@@ -18,7 +18,7 @@ with open("data.json") as f:
 # Initialize the OpenAI model
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=api_key)
 
-# Initialize session state for messages and user name
+# Initialize chat history and user name in session state
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {
@@ -38,7 +38,7 @@ if "messages" not in st.session_state:
 if "user_name" not in st.session_state:
     st.session_state.user_name = None
 
-# Custom CSS for UI styling
+# Custom CSS for better styling
 st.markdown("""
     <style>
         .title-container {
@@ -149,7 +149,7 @@ def handle_input():
         elif "help" in user_input.lower():
             response = "I'm here to help! Please tell me more so I can assist you better. 😊"
         elif "hello" in user_input.lower():
-            response = "Hello! How can I assist you today? 😊"
+            response = f"Hello {st.session_state.user_name or 'there'}! How can I assist you today? 😊"
         else:
             # Default handling by OpenAI API if input doesn't match predefined phrases
             if any(user_input.lower() in str(value).lower() for value in personal_data.values()):
@@ -184,6 +184,7 @@ for message in st.session_state.messages[1:]:  # Skip the system message
     else:
         st.markdown(f"<div class='message assistant-message'><div class='bubble'>{message['content']}</div></div>", unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
+
 
 
 
