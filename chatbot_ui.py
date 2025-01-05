@@ -23,7 +23,7 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": "Hello! How can I assist you today? 😊"}
     ]
 
-# Custom CSS for improved UI (removed white empty area)
+# Custom CSS for improved UI
 st.markdown("""
     <style>
         body {
@@ -50,10 +50,9 @@ st.markdown("""
         .chat-container {
             max-width: 700px;
             margin: 0 auto;
-            padding: 0;  /* Removed padding to remove white space */
-            box-shadow: none;  /* Removed shadow to remove box effect */
-            background-color: transparent;  /* Fully transparent background */
-            border: none;  /* Removed border */
+            padding: 0;
+            background-color: transparent;
+            border: none;
         }
         .message {
             display: flex;
@@ -131,7 +130,7 @@ with st.sidebar:
             if st.button(message["content"][:20] + "...", key=f"history_{i}"):
                 st.session_state.selected_message = message["content"]
 
-# Chat interface container (updated to avoid white box effect)
+# Chat interface container
 for message in st.session_state.messages:
     if message["role"] == "user":
         st.markdown(
@@ -164,19 +163,21 @@ def voice_to_text():
             st.toast(f"Error: {e}")
             return None
 
-# Handle text input
+# Handle text input and generate intelligent responses
 def handle_input():
-    user_input = st.session_state.get("user_input", "").strip()
+    user_input = st.session_state.get("user_input", "").strip().lower()
     if user_input:
         st.session_state.messages.append({"role": "user", "content": user_input})
 
-        # Intelligent responses based on keywords
-        if "name" in user_input.lower():
-            response = f"Hello {user_input.split()[-1]}! How can I help you? 😊"
-        elif "help" in user_input.lower():
-            response = "I'm here to help! Please tell me more so I can assist you better. 😊"
-        elif "hello" in user_input.lower():
-            response = "Hi there! How can I assist you today? 😊"
+        # Custom intelligent responses
+        if "road accident" in user_input or "injured" in user_input:
+            response = "I’m so sorry to hear that. Please stay calm. I'm notifying the nearest e-Ambulance to assist you. 🙏"
+        elif "help" in user_input:
+            response = "I'm here to help! Please share the details so I can guide you better. 😊"
+        elif "free" in user_input:
+            response = "Yes, this service is free for emergency cases. Let me know how I can assist you further."
+        elif "ambulance" in user_input:
+            response = "Our ambulances are fully equipped with life-saving equipment. What assistance do you need?"
         else:
             response = "I am sorry, I can only answer questions related to the e-Ambulance system."
 
