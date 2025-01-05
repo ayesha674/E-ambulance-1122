@@ -20,7 +20,7 @@ llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=api_key)
 # Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = [
-      
+        {"role": "system", "content": "You are a friendly and supportive chatbot for the E-Ambulance 1122 service."},
         {"role": "assistant", "content": "Hello! Welcome to the E-Ambulance 1122 chatbot. How can I assist you today? 😊"}
     ]
 if "user_name" not in st.session_state:
@@ -102,7 +102,10 @@ def handle_input():
 
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
-        st.session_state.user_input = ""
+        
+        # **Reset user input safely**
+        st.session_state.handled_once = False
+        st.session_state["user_input"] = " "  # Avoid triggering input change listener
 
 # Display chat messages
 st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
