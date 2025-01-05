@@ -137,9 +137,12 @@
             "my_name_is": "Nice to meet you, {user_name}! 😊 How can I assist you today?",
             "default_response": "I'm here to provide you with the best service for your emergency needs! 🚑"
         },
-        "help_request": {
-            "need_help": "💡 Sure! Please choose one of the following options: \n1️⃣ *Booking Info* \n2️⃣ *Ambulance Types* \n3️⃣ *App Updates* \nJust type the corresponding number!"
-        },
+        
+            "help_request": {
+              "need_help": "🚨 *Don't worry, help is here!* I understand that things may feel stressful right now, but you've got this! Here's how I can assist you:\n\n💡 *Select one of the options below:* \n\n1️⃣ **Booking Information** – Learn the quick steps to book an ambulance.\n\n2️⃣ **Ambulance Types** – Discover the different ambulance services we provide.\n\n3️⃣ **App Updates** – Stay updated with the latest features and improvements.\n\n✍️ *Simply type the corresponding number (e.g., '1'), and I'll guide you step-by-step!* 😊"
+            },
+          
+          
         "personalized_greeting": {
             "morning": "🌅 Good morning, {user_name}! How can I help you today?",
             "afternoon": "☀️ Good afternoon, {user_name}! Need any assistance?",
@@ -153,6 +156,7 @@
         "acknowledgments": {
             "thank_you_feedback": "🙌 Thank you for your feedback! Your input helps us improve every day.",
             "booking_success": "🚑 Your ambulance has been booked successfully! Help is on its way!"
-        }
+        },
+        "is_service_free": "Yes, the e-Ambulance service is free. You can book an ambulance without any charges."
     }
 }
