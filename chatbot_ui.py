@@ -18,7 +18,7 @@ llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=api_key)
 # Initialize session state for chat history
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "You are a friendly and helpful e-Ambulance chatbot."},
+       
         {"role": "assistant", "content": "Hello! How can I assist you today? 😊"}
     ]
 if "user_name" not in st.session_state:
