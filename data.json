@@ -126,5 +126,19 @@
                 "Fixed minor bugs in booking confirmation process."
             ]
         }
-    ]
+    ],
+    "chat_responses": {
+        "greetings": {
+            "hi": "Hello! How can I assist you today?",
+            "hello": "Hi there! How can I help you?",
+            "hey": "Hey! I'm here to assist you with any queries you have."
+        },
+        "name_request": {
+            "my_name_is": "Nice to meet you, {user_name}! How can I assist you today?",
+            "default_response": "I'm here to provide you with the best service for your emergency needs."
+        },
+        "help_request": {
+            "need_help": "Sure! Please specify if you need information on booking, ambulance types, or recent updates."
+        }
+    }
 }
