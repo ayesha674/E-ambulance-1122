@@ -15,11 +15,11 @@ with open("data.json") as f:
 
 # Initialize session state
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "content": "Hello! Welcome to the E-Ambulance 1122 chatbot. How can I assist you today? 😊"}
-    ]
+    st.session_state.messages = []
+
 if "user_name" not in st.session_state:
     st.session_state.user_name = None
+
 if "handled_once" not in st.session_state:
     st.session_state.handled_once = False
 
@@ -43,22 +43,21 @@ st.markdown("""
 st.markdown("<div class='title-container'>E-Ambulance 1122</div>", unsafe_allow_html=True)
 st.markdown("<div class='description'>This chatbot is for your convenience. Feel free to ask anything about the E-Ambulance service.</div>", unsafe_allow_html=True)
 
-# Sidebar for Chat History
-st.sidebar.title("Chat History")
-for idx, message in enumerate(st.session_state.messages):
-    if message["role"] == "user":
-        st.sidebar.write(f"User: {message['content']}")
-    else:
-        st.sidebar.write(f"Bot: {message['content']}")
+# Sidebar for chat history
+with st.sidebar:
+    st.markdown("## Chat History")
+    if st.session_state.messages:
+        for message in st.session_state.messages:
+            role = "User" if message["role"] == "user" else "Bot"
+            st.write(f"{role}: {message['content']}")
 
-# Pre-defined responses
-greetings = ["Hi! How can I assist you today? 😊", "Hello! How can I help you today?", "Welcome! What can I do for you today?"]
-help_responses = ["Of course, I'm here for you. Let me know what you need!", "I'm ready to assist! Please tell me more.", "I'm here to help you! 😊"]
-e_ambulance_details_responses = [
-    "The E-Ambulance 1122 service provides 24/7 emergency medical assistance. Our team is highly trained and responds promptly to medical emergencies.",
-    "E-Ambulance 1122 is a free emergency service designed to save lives. We prioritize rapid response during road accidents and medical crises.",
-    "You can count on E-Ambulance 1122 during emergencies. The service operates round-the-clock to ensure citizens' safety. Call 1122 for help."
-]
+# Function to fetch contact information from JSON
+def fetch_contact_info():
+    contact_details = personal_data.get("contact_details", {})
+    phone_number = contact_details.get("phone", "Phone number not available")
+    email = contact_details.get("email", "Email not available")
+    address = contact_details.get("address", "Address not available")
+    return f"📞 {phone_number}, 📧 {email}, 🏠 {address}."
 
 # Function to handle user input
 def handle_input():
@@ -71,50 +70,34 @@ def handle_input():
         st.session_state.messages.append({"role": "user", "content": user_input})
         st.session_state.handled_once = True
 
-        # Handle greetings
         if user_input in ["hello", "hi", "hey"]:
-            response = random.choice(greetings)
+            response = "Hi! How can I assist you today? 😊"
 
-        # Handle "my name is" and remember user name
         elif "my name is" in user_input:
             user_name = user_input.split("my name is")[-1].strip().capitalize()
             st.session_state.user_name = user_name
-            response = f"Hello {user_name}! It's nice to meet you. 😊 How can I assist you today?"
+            response = f"Hello {user_name}! It's nice to meet you. How can I assist you today?"
 
-        # Handle name-related queries
-        elif "remember my name" in user_input or "did you remember my name" in user_input:
+        elif "remember my name" in user_input:
             if st.session_state.user_name:
-                response = f"Of course! Your name is {st.session_state.user_name}. 😊 How can I assist you further?"
+                response = f"Yes, your name is {st.session_state.user_name}. 😊"
             else:
-                response = "I don't seem to remember your name yet. Could you please remind me?"
+                response = "I don't know your name yet. Please tell me your name."
 
-        # Handle specific details request
         elif "detail" in user_input or "describe" in user_input:
-            response = random.choice(e_ambulance_details_responses)
+            response = "I cannot take that action, but here are the contact details: " + fetch_contact_info()
 
-        # Handle emergency-related requests
         elif "accident" in user_input or "injured" in user_input:
-            response = "I'm really sorry to hear that! 😢 Please stay calm and dial 1122 immediately. An ambulance will reach you shortly. 🙏"
+            response = "I'm really sorry to hear that! Please stay calm and dial 1122 immediately. An ambulance will reach you shortly. 🙏"
 
-        elif "blind" in user_input or "need help" in user_input:
-            response = "I'm so sorry to hear that. Stay calm and safe. If you need immediate assistance, call 1122 or ask someone nearby to help you. Let me know if I can provide more guidance."
-
-        # Handle specific keywords for calling the service
-        elif any(keyword in user_input for keyword in ["contact", "how to call", "call number"]):
-            response = "You can contact the E-Ambulance service anytime by dialing 1122. We are available 24/7 to assist you."
-
-        # Handle "is the service free"
         elif "free" in user_input:
-            response = "Yes, the E-Ambulance service is completely free for all emergencies. You can call 1122 anytime you need medical assistance."
+            response = "Yes, the E-Ambulance service is free for all emergencies. You can call 1122 anytime you need assistance."
 
-        # Fallback response
         else:
-            response = "I'm here to help! Could you rephrase your question, or ask me about the E-Ambulance services? 😊"
+            response = "I'm here to help! Can you rephrase your question, or ask me about the E-Ambulance services? 😊"
 
-        # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
-        st.session_state["user_input"] = ""  # Reset user input field
-        st.session_state.handled_once = False
+        st.session_state["user_input"] = ""
 
 # Function for voice-to-text input
 def voice_to_text():
@@ -126,7 +109,7 @@ def voice_to_text():
             audio = recognizer.listen(source, timeout=5)
             text = recognizer.recognize_google(audio)
             return text
-        except Exception as e:
+        except Exception:
             return None
 
 # Display chat messages
@@ -141,7 +124,7 @@ for message in st.session_state.messages:
     )
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Input and buttons for sending messages
+# Input field
 st.markdown("<div class='input-container'>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns([8, 1, 1])
 
@@ -166,5 +149,6 @@ with col3:
         handle_input()
 
 st.markdown("</div>", unsafe_allow_html=True)
+
 
 
