@@ -23,6 +23,9 @@ if "user_name" not in st.session_state:
 if "handled_once" not in st.session_state:
     st.session_state.handled_once = False
 
+if "user_input" not in st.session_state:
+    st.session_state.user_input = ""
+
 # Custom CSS for styling
 st.markdown("""
     <style>
@@ -61,14 +64,9 @@ def fetch_contact_info():
 
 # Function to handle user input
 def handle_input():
-    if st.session_state.handled_once:
-        st.session_state.handled_once = False
-        return
-
-    user_input = st.session_state.get("user_input", "").strip().lower()
+    user_input = st.session_state.user_input.strip().lower()
     if user_input:
         st.session_state.messages.append({"role": "user", "content": user_input})
-        st.session_state.handled_once = True
 
         if user_input in ["hello", "hi", "hey"]:
             response = "Hi! How can I assist you today? 😊"
@@ -97,7 +95,7 @@ def handle_input():
             response = "I'm here to help! Can you rephrase your question, or ask me about the E-Ambulance services? 😊"
 
         st.session_state.messages.append({"role": "assistant", "content": response})
-        st.session_state["user_input"] = ""
+        st.session_state.user_input = ""  # Reset user input after handling
 
 # Function for voice-to-text input
 def voice_to_text():
@@ -141,7 +139,7 @@ with col2:
     if st.button("🎙️"):
         user_input = voice_to_text()
         if user_input:
-            st.session_state.messages.append({"role": "user", "content": user_input})
+            st.session_state.user_input = user_input
             handle_input()
 
 with col3:
