@@ -9,7 +9,7 @@ import speech_recognition as sr
 load_dotenv()
 api_key = os.getenv("API_KEY")
 
-# Load JSON data
+# Load personal data from a JSON file
 with open("data.json") as f:
     personal_data = json.load(f)
 
@@ -19,7 +19,7 @@ llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=api_key)
 # Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        
+       
         {"role": "assistant", "content": "Hello! How can I assist you today? 😊"}
     ]
 if "user_name" not in st.session_state:
@@ -135,51 +135,51 @@ def voice_to_text():
 
 # Handle user input
 def handle_input():
-    user_input = st.session_state.get("user_input", "").strip()
+    user_input = st.session_state.get("user_input", "").strip().lower()
     if user_input:
-        st.session_state.messages.append({"role": "user", "content": user_input.lower()})
+        st.session_state.messages.append({"role": "user", "content": user_input})
 
-        # Name recognition and intelligent response
-        if "my name is" in user_input:
+        # Handle "hello" or "hi" greetings
+        if user_input in ["hello", "hi", "hey"]:
+            response = "Hi there! How can I assist you today? 😊"
+
+        # Handle "my name is" to remember user name
+        elif "my name is" in user_input:
             user_name = user_input.split("my name is")[-1].strip().capitalize()
             st.session_state.user_name = user_name
             response = f"Hello {user_name}! How can I assist you today? 😊"
 
-        elif "need your help" in user_input:
-            if st.session_state.user_name:
-                response = f"Hi {st.session_state.user_name}, I’m here to assist you! Please tell me more so I can guide you better. 😊"
-            else:
-                response = "I'm here to help! Can you please tell me your name so I can assist you better?"
-
+        # Handle "do you remember my name" or name recall
         elif "remember my name" in user_input:
             if st.session_state.user_name:
-                response = f"Of course! Your name is {st.session_state.user_name}. Let me know how I can help you further."
+                response = f"Of course! Your name is {st.session_state.user_name}. Let me know how I can help you."
             else:
-                response = "I’m sorry, I don’t seem to remember your name. Can you remind me?"
+                response = "I don't seem to remember your name. Can you tell me again?"
 
-        # Emergency-related phrases
+        # Handle emergency-related queries
         elif "road accident" in user_input or "injured" in user_input:
-            response = "I’m so sorry to hear that. Please stay calm. Our team is ready to assist you. 🙏"
+            response = "I’m so sorry to hear that. Please stay calm. Our team is ready to assist you immediately. 🙏"
 
-        # Service-related questions
+        # Handle "is the service free"
         elif "free" in user_input:
-            response = "Yes, the e-Ambulance service is free for emergency cases."
+            response = "Yes, the e-Ambulance service is free for emergencies."
 
-        # JSON data check
+        # Check for JSON-related queries
         elif any(user_input in str(value).lower() for value in personal_data.values()):
             for key, value in personal_data.items():
                 if user_input in str(value).lower():
-                    response = f"Based on our records: {value}"
+                    response = f"Here's the information you requested: {value}"
                     break
 
-        # Default response
+        # Default fallback
         else:
             response = "I'm sorry, I can only answer questions related to the e-Ambulance system."
 
+        # Add assistant response
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.session_state.user_input = ""
 
-# Display chat history
+# Display chat history in the sidebar
 with st.sidebar:
     st.markdown("### Chat History")
     for i, message in enumerate(st.session_state.messages):
@@ -197,7 +197,7 @@ for message in st.session_state.messages:
     )
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Input container
+# Input container with icons
 st.markdown("<div class='input-container'>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns([8, 1, 1])
 
