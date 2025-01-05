@@ -16,7 +16,6 @@ with open("data.json") as f:
 # Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "You are a friendly and supportive chatbot for the E-Ambulance 1122 service."},
         {"role": "assistant", "content": "Hello! Welcome to the E-Ambulance 1122 chatbot. How can I assist you today? 😊"}
     ]
 if "user_name" not in st.session_state:
@@ -50,7 +49,6 @@ help_responses = ["Of course, I'm here for you. Let me know what you need!", "I'
 
 # Function to handle user input
 def handle_input():
-    # Avoid duplicate processing
     if st.session_state.handled_once:
         st.session_state.handled_once = False
         return
@@ -68,33 +66,41 @@ def handle_input():
         elif "my name is" in user_input:
             user_name = user_input.split("my name is")[-1].strip().capitalize()
             st.session_state.user_name = user_name
-            response = f"Hello {user_name}! It's nice to meet you. How can I assist you today? 😊"
+            response = f"Hello {user_name}! It's nice to meet you. 😊 How can I assist you today?"
 
         # Handle name-related queries
-        elif "do you remember my name" in user_input or "did you remember my name" in user_input:
+        elif "remember my name" in user_input or "did you remember my name" in user_input:
             if st.session_state.user_name:
-                response = f"Yes, I remember your name! Your name is {st.session_state.user_name}. 😊"
+                response = f"Of course! Your name is {st.session_state.user_name}. 😊 How can I assist you further?"
             else:
-                response = "I don't seem to remember your name yet. Could you remind me?"
+                response = "I don't seem to remember your name yet. Could you please remind me?"
+
+        # Flexible responses for details of the E-Ambulance service
+        elif any(keyword in user_input for keyword in ["details", "information", "what is", "describe", "service"]):
+            response = (
+                "The E-Ambulance 1122 service provides 24/7 emergency medical assistance. "
+                "It’s free and ensures quick response during medical emergencies. You can call 1122 anytime, "
+                "and our team will arrive within minutes to provide medical support."
+            )
 
         # Handle emergency-related requests
+        elif "accident" in user_input or "injured" in user_input:
+            response = "I'm really sorry to hear that! 😢 Please stay calm and dial 1122 immediately. An ambulance will reach you shortly. 🙏"
+
         elif "blind" in user_input or "need help" in user_input:
-            response = "I'm so sorry to hear that. Please stay calm. If you need immediate help, call 1122 or ask someone nearby to assist you. Let me know if I can provide more information. 🙏"
+            response = "I'm so sorry to hear that. Stay calm and safe. If you need immediate assistance, call 1122 or ask someone nearby to help you. Let me know if I can provide more guidance."
 
-        elif "road accident" in user_input or "injured" in user_input:
-            response = "I'm really sorry to hear that! Please stay calm. An ambulance is on its way when you call 1122. Can I help you with anything else in the meantime? 🙏"
-
-        # Handle details about the E-Ambulance service
-        elif "details" in user_input or "e-ambulance" in user_input or "what is e-ambulance" in user_input:
-            response = "The E-Ambulance 1122 service provides 24/7 emergency medical assistance. It’s free and ensures quick response during medical emergencies. You can call 1122 anytime."
+        # Handle specific keywords for calling the service
+        elif any(keyword in user_input for keyword in ["contact", "how to call", "call number"]):
+            response = "You can contact the E-Ambulance service anytime by dialing 1122. We are available 24/7 to assist you."
 
         # Handle "is the service free"
         elif "free" in user_input:
             response = "Yes, the E-Ambulance service is completely free for all emergencies. You can call 1122 anytime you need medical assistance."
 
-        # Handle fallback queries
+        # Fallback response
         else:
-            response = "I didn't quite understand that. Can you rephrase your question? Or ask about the E-Ambulance 1122 services. 😊"
+            response = "I'm here to help! Could you rephrase your question, or ask me about the E-Ambulance services? 😊"
 
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
@@ -151,4 +157,3 @@ with col3:
         handle_input()
 
 st.markdown("</div>", unsafe_allow_html=True)
-
