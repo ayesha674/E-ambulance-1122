@@ -23,7 +23,7 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": "Hello! How can I assist you today? 😊"}
     ]
 
-# Custom CSS for improved UI
+# Custom CSS for improved UI (removed white empty area)
 st.markdown("""
     <style>
         body {
@@ -50,12 +50,10 @@ st.markdown("""
         .chat-container {
             max-width: 700px;
             margin: 0 auto;
-            border-radius: 15px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            height: calc(100vh - 200px);  /* Fill most of the height dynamically */
-            overflow-y: auto;
-            background-color: #fff;
-            padding: 10px;
+            padding: 0;  /* Removed padding to remove white space */
+            box-shadow: none;  /* Removed shadow to remove box effect */
+            background-color: transparent;  /* Fully transparent background */
+            border: none;  /* Removed border */
         }
         .message {
             display: flex;
@@ -133,10 +131,7 @@ with st.sidebar:
             if st.button(message["content"][:20] + "...", key=f"history_{i}"):
                 st.session_state.selected_message = message["content"]
 
-# Chat interface container
-st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
-
-# Display chat messages
+# Chat interface container (updated to avoid white box effect)
 for message in st.session_state.messages:
     if message["role"] == "user":
         st.markdown(
@@ -148,8 +143,6 @@ for message in st.session_state.messages:
             f"<div class='message assistant-message'><div class='bubble'>{message['content']}</div></div>",
             unsafe_allow_html=True,
         )
-
-st.markdown("</div>", unsafe_allow_html=True)
 
 # Function to convert voice to text
 def voice_to_text():
@@ -215,5 +208,3 @@ with col3:
         handle_input()
 
 st.markdown("</div>", unsafe_allow_html=True)
-
-
