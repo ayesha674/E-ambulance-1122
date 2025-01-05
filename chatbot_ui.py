@@ -1,6 +1,5 @@
 import streamlit as st
 import json
-from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 import os
 import random
@@ -13,9 +12,6 @@ api_key = os.getenv("API_KEY")
 # Load personal data from JSON
 with open("data.json") as f:
     personal_data = json.load(f)
-
-# Initialize OpenAI model
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=api_key)
 
 # Initialize session state
 if "messages" not in st.session_state:
@@ -48,11 +44,11 @@ st.markdown("""
 st.markdown("<div class='title-container'>E-Ambulance 1122</div>", unsafe_allow_html=True)
 st.markdown("<div class='description'>This chatbot is for your convenience. Feel free to ask anything about the E-Ambulance service.</div>", unsafe_allow_html=True)
 
-# Custom greetings and responses
+# Pre-defined responses
 greetings = ["Hi! How can I assist you today? 😊", "Hello! How can I help you today?", "Welcome! What can I do for you today?"]
 help_responses = ["Of course, I'm here for you. Let me know what you need!", "I'm ready to assist! Please tell me more.", "I'm here to help you! 😊"]
 
-# Handle user input
+# Function to handle user input
 def handle_input():
     # Avoid duplicate processing
     if st.session_state.handled_once:
@@ -64,7 +60,7 @@ def handle_input():
         st.session_state.messages.append({"role": "user", "content": user_input})
         st.session_state.handled_once = True
 
-        # Handle common greetings
+        # Handle greetings
         if user_input in ["hello", "hi", "hey"]:
             response = random.choice(greetings)
 
@@ -102,10 +98,21 @@ def handle_input():
 
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
-        
-        # **Reset user input safely**
+        st.session_state["user_input"] = ""  # Reset user input field
         st.session_state.handled_once = False
-        st.session_state["user_input"] = " "  # Avoid triggering input change listener
+
+# Function for voice-to-text input
+def voice_to_text():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        st.toast("Listening... Speak now!")
+        try:
+            recognizer.adjust_for_ambient_noise(source)
+            audio = recognizer.listen(source, timeout=5)
+            text = recognizer.recognize_google(audio)
+            return text
+        except Exception as e:
+            return None
 
 # Display chat messages
 st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
@@ -119,20 +126,7 @@ for message in st.session_state.messages:
     )
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Voice-to-text feature
-def voice_to_text():
-    recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.toast("Listening... Speak now!")
-        try:
-            recognizer.adjust_for_ambient_noise(source)
-            audio = recognizer.listen(source, timeout=5)
-            text = recognizer.recognize_google(audio)
-            return text
-        except Exception as e:
-            return None
-
-# Input field and buttons
+# Input and buttons for sending messages
 st.markdown("<div class='input-container'>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns([8, 1, 1])
 
