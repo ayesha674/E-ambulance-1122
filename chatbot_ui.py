@@ -12,8 +12,10 @@ load_dotenv()
 api_key = os.getenv("API_KEY")
 
 # Load personal data from a JSON file
-with open("data.json") as f:
+# Load personal data from a JSON file with UTF-8 encoding
+with open("data.json", "r", encoding="utf-8") as f:
     personal_data = json.load(f)
+
 
 # Initialize the OpenAI model
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=api_key)
