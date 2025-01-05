@@ -43,6 +43,14 @@ st.markdown("""
 st.markdown("<div class='title-container'>E-Ambulance 1122</div>", unsafe_allow_html=True)
 st.markdown("<div class='description'>This chatbot is for your convenience. Feel free to ask anything about the E-Ambulance service.</div>", unsafe_allow_html=True)
 
+# Sidebar for Chat History
+st.sidebar.title("Chat History")
+for idx, message in enumerate(st.session_state.messages):
+    if message["role"] == "user":
+        st.sidebar.write(f"User: {message['content']}")
+    else:
+        st.sidebar.write(f"Bot: {message['content']}")
+
 # Pre-defined responses
 greetings = ["Hi! How can I assist you today? 😊", "Hello! How can I help you today?", "Welcome! What can I do for you today?"]
 help_responses = ["Of course, I'm here for you. Let me know what you need!", "I'm ready to assist! Please tell me more.", "I'm here to help you! 😊"]
@@ -158,4 +166,5 @@ with col3:
         handle_input()
 
 st.markdown("</div>", unsafe_allow_html=True)
+
 
