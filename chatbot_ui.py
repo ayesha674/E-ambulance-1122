@@ -46,6 +46,11 @@ st.markdown("<div class='description'>This chatbot is for your convenience. Feel
 # Pre-defined responses
 greetings = ["Hi! How can I assist you today? 😊", "Hello! How can I help you today?", "Welcome! What can I do for you today?"]
 help_responses = ["Of course, I'm here for you. Let me know what you need!", "I'm ready to assist! Please tell me more.", "I'm here to help you! 😊"]
+e_ambulance_details_responses = [
+    "The E-Ambulance 1122 service provides 24/7 emergency medical assistance. Our team is highly trained and responds promptly to medical emergencies.",
+    "E-Ambulance 1122 is a free emergency service designed to save lives. We prioritize rapid response during road accidents and medical crises.",
+    "You can count on E-Ambulance 1122 during emergencies. The service operates round-the-clock to ensure citizens' safety. Call 1122 for help."
+]
 
 # Function to handle user input
 def handle_input():
@@ -75,13 +80,9 @@ def handle_input():
             else:
                 response = "I don't seem to remember your name yet. Could you please remind me?"
 
-        # Flexible responses for details of the E-Ambulance service
-        elif any(keyword in user_input for keyword in ["details", "information", "what is", "describe", "service"]):
-            response = (
-                "The E-Ambulance 1122 service provides 24/7 emergency medical assistance. "
-                "It’s free and ensures quick response during medical emergencies. You can call 1122 anytime, "
-                "and our team will arrive within minutes to provide medical support."
-            )
+        # Handle specific details request
+        elif "detail" in user_input or "describe" in user_input:
+            response = random.choice(e_ambulance_details_responses)
 
         # Handle emergency-related requests
         elif "accident" in user_input or "injured" in user_input:
@@ -157,3 +158,4 @@ with col3:
         handle_input()
 
 st.markdown("</div>", unsafe_allow_html=True)
+
