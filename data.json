@@ -129,16 +129,30 @@
     ],
     "chat_responses": {
         "greetings": {
-            "hi": "Hello! How can I assist you today?",
-            "hello": "Hi there! How can I help you?",
-            "hey": "Hey! I'm here to assist you with any queries you have."
+            "hi": "👋 Hello! How can I assist you today?",
+            "hello": "😊 Hi there! Need any help?",
+            "hey": "Hey! 👋 I'm here to assist you with any queries."
         },
         "name_request": {
-            "my_name_is": "Nice to meet you, {user_name}! How can I assist you today?",
-            "default_response": "I'm here to provide you with the best service for your emergency needs."
+            "my_name_is": "Nice to meet you, {user_name}! 😊 How can I assist you today?",
+            "default_response": "I'm here to provide you with the best service for your emergency needs! 🚑"
         },
         "help_request": {
-            "need_help": "Sure! Please specify if you need information on booking, ambulance types, or recent updates."
+            "need_help": "💡 Sure! Please choose one of the following options: \n1️⃣ *Booking Info* \n2️⃣ *Ambulance Types* \n3️⃣ *App Updates* \nJust type the corresponding number!"
+        },
+        "personalized_greeting": {
+            "morning": "🌅 Good morning, {user_name}! How can I help you today?",
+            "afternoon": "☀️ Good afternoon, {user_name}! Need any assistance?",
+            "evening": "🌙 Good evening, {user_name}! How can I assist you?"
+        },
+        "typing_response": "✏️ One moment, I’m fetching the details for you...",
+        "progress_response": {
+            "fetching": "⏳ Fetching your data... Please wait a moment.",
+            "completed": "✅ Your request is ready! Here’s the information:"
+        },
+        "acknowledgments": {
+            "thank_you_feedback": "🙌 Thank you for your feedback! Your input helps us improve every day.",
+            "booking_success": "🚑 Your ambulance has been booked successfully! Help is on its way!"
         }
     }
 }
