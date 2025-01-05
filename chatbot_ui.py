@@ -12,10 +12,8 @@ load_dotenv()
 api_key = os.getenv("API_KEY")
 
 # Load personal data from a JSON file
-# Load personal data from a JSON file with UTF-8 encoding
 with open("data.json", "r", encoding="utf-8") as f:
     personal_data = json.load(f)
-
 
 # Initialize the OpenAI model
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=api_key)
@@ -27,10 +25,14 @@ if "messages" not in st.session_state:
             "role": "system",
             "content": (
                 "You are an AI chatbot designed to assist users with the e-Ambulance system. "
-                "You can only answer questions based on the following JSON data: "
+                "You can  answer questions based on the following JSON data: "
                 f"{personal_data}. If a question is not related to the JSON data, respond with: "
                 "'I am sorry, I can only answer questions related to the e-Ambulance system.'"
             ),
+        },
+        {
+            "role": "assistant",
+            "content": "Hello! How can I assist you?"
         }
     ]
 
@@ -137,7 +139,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title and description
-st.markdown("<div class='title-container'>E-Ambulance 1122</div>", unsafe_allow_html=True)
+st.markdown("<div class='title-container'> E-Ambulance 1122</div>", unsafe_allow_html=True)
 st.markdown("<div class='description'>This chatbot is for your convenience. Feel free to ask anything.</div>", unsafe_allow_html=True)
 
 # Sidebar for chat history
@@ -165,6 +167,7 @@ for message in st.session_state.messages[1:]:  # Skip system message
         )
 
 st.markdown("</div>", unsafe_allow_html=True)
+
 # Voice-to-text functionality
 def voice_to_text():
     recognizer = sr.Recognizer()
@@ -184,8 +187,8 @@ def voice_to_text():
         except sr.RequestError as e:
             st.toast(f"Error with the speech recognition service: {e}")
             return None
-        
-       # Input handler for restricting responses to JSON-related questions
+
+# Input handler for restricting responses to JSON-related questions
 def handle_input():
     user_input = st.session_state.get("user_input", "").strip()
     if user_input:
@@ -197,7 +200,7 @@ def handle_input():
             response = llm.invoke(st.session_state.messages).content
         else:
             # Otherwise, return a predefined response
-            response = "Hmm, I may not have the answer to that yet, but I’m always learning! 🚑 If you need help with ambulance bookings or updates, I’m here to assist. Need a quick tip? You can ask me things like:\n\n- 'How do I book an ambulance?'\n- 'What types of ambulances are available?'\n- 'Give me the latest updates.'\n\nWhat would you like to know? 😊"
+            response = "I am sorry, I can only answer questions related to the e-Ambulance system."
 
         # Add the response to the chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
