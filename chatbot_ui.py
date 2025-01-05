@@ -25,6 +25,8 @@ if "messages" not in st.session_state:
     ]
 if "user_name" not in st.session_state:
     st.session_state.user_name = None
+if "handled_once" not in st.session_state:
+    st.session_state.handled_once = False
 
 # Custom CSS for styling
 st.markdown("""
@@ -52,9 +54,15 @@ help_responses = ["Of course, I'm here for you. Let me know what you need!", "I'
 
 # Handle user input
 def handle_input():
+    # Avoid duplicate processing
+    if st.session_state.handled_once:
+        st.session_state.handled_once = False
+        return
+
     user_input = st.session_state.get("user_input", "").strip().lower()
     if user_input:
         st.session_state.messages.append({"role": "user", "content": user_input})
+        st.session_state.handled_once = True
 
         # Handle common greetings
         if user_input in ["hello", "hi", "hey"]:
@@ -146,3 +154,4 @@ with col3:
         handle_input()
 
 st.markdown("</div>", unsafe_allow_html=True)
+
