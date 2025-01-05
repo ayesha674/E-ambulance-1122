@@ -1,132 +1,217 @@
 import streamlit as st
 import json
+from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 import os
-import random
-import speech_recognition as sr
+import speech_recognition as sr  # For voice-to-text
 
 # Load environment variables
 load_dotenv()
+
+# Retrieve the API key from the .env file
 api_key = os.getenv("API_KEY")
 
-# Load personal data from JSON
+# Load personal data from a JSON file
 with open("data.json") as f:
     personal_data = json.load(f)
 
-# Initialize session state
+# Initialize the OpenAI model
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=api_key)
+
+# Initialize chat history in session state
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Hello! Welcome to the E-Ambulance 1122 chatbot. How can I assist you today? 😊"}
+        {
+            "role": "system",
+            "content": (
+                "You are an AI chatbot designed to assist users with the e-Ambulance system. "
+                "You can only answer questions based on the following JSON data: "
+                f"{personal_data}. If a question is not related to the JSON data, respond with: "
+                "'I am sorry, I can only answer questions related to the e-Ambulance system.'"
+            ),
+        }
     ]
-if "user_name" not in st.session_state:
-    st.session_state.user_name = None
-if "handled_once" not in st.session_state:
-    st.session_state.handled_once = False
 
-# Custom CSS for styling
+
+# Custom CSS for the UI
 st.markdown("""
     <style>
-        .title-container { text-align: center; padding: 15px; background-color: #ffc0cb; color: black; font-size: 26px; border-radius: 10px; }
-        .description { text-align: center; font-size: 16px; color: #333; margin-bottom: 15px; }
-        .chat-container { max-width: 700px; margin: 0 auto; padding: 10px; border-radius: 15px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); }
-        .message { display: flex; align-items: flex-start; margin-bottom: 10px; }
-        .user-message { justify-content: flex-end; text-align: right; }
-        .assistant-message { justify-content: flex-start; text-align: left; }
-        .bubble { padding: 12px 15px; border-radius: 20px; font-size: 14px; max-width: 70%; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); }
-        .user-message .bubble { background-color: #fff5f5; color: black; }
-        .assistant-message .bubble { background-color: #ffc0cb; color: black; }
-        .input-container { position: fixed; bottom: 0; left: 0; right: 0; padding: 10px 15px; display: flex; align-items: center; background-color: white; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #fef7f7;
+            margin: 0;
+            padding: 0;
+        }
+        .title-container {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #ffc0cb;
+            color: black;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .description {
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .chat-container {
+            max-width: 700px;
+            margin: 0 auto;
+            border-radius: 15px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            height: auto;
+            padding: 0;
+            background: none;
+        }
+        .message {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .user-message {
+            justify-content: flex-end;
+            margin-left: auto;
+        }
+        .assistant-message {
+            justify-content: flex-start;
+            margin-right: auto;
+        }
+        .bubble {
+            padding: 12px 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            max-width: 60%;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .user-message .bubble {
+            background-color: #fff5f5;
+            color: black;
+            text-align: left;
+        }
+        .assistant-message .bubble {
+            background-color: #ffc0cb;
+            color: black;
+            text-align: left;
+        }
+        .icon {
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+        }
+        .input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+        }
+        .input-container input {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            border-radius: 20px;
+            margin-right: 10px;
+            background-color: #fff5f5;
+        }
+        .input-container button {
+            background-color: #ff8ba7;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
     </style>
 """, unsafe_allow_html=True)
 
 # Title and description
-st.markdown("<div class='title-container'>E-Ambulance 1122</div>", unsafe_allow_html=True)
-st.markdown("<div class='description'>This chatbot is for your convenience. Feel free to ask anything about the E-Ambulance service.</div>", unsafe_allow_html=True)
+st.markdown("<div class='title-container'>E-Ambulance</div>", unsafe_allow_html=True)
+st.markdown("<div class='description'>This chatbot is for your convenience. Feel free to ask anything.</div>", unsafe_allow_html=True)
 
-# Pre-defined responses
-greetings = ["Hi! How can I assist you today? 😊", "Hello! How can I help you today?", "Welcome! What can I do for you today?"]
-help_responses = ["Of course, I'm here for you. Let me know what you need!", "I'm ready to assist! Please tell me more.", "I'm here to help you! 😊"]
+# Sidebar for chat history
+with st.sidebar:
+    st.markdown("### Chat History")
+    for i, message in enumerate(st.session_state.messages):
+        if message["role"] == "user":
+            if st.button(message["content"][:20] + "...", key=f"history_{i}"):
+                st.session_state.selected_message = message["content"]
 
-# Function to handle user input
-def handle_input():
-    # Avoid duplicate processing
-    if st.session_state.handled_once:
-        st.session_state.handled_once = False
-        return
+# Chat Interface
+st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
 
-    user_input = st.session_state.get("user_input", "").strip().lower()
-    if user_input:
-        st.session_state.messages.append({"role": "user", "content": user_input})
-        st.session_state.handled_once = True
+# Display messages
+for message in st.session_state.messages[1:]:  # Skip system message
+    if message["role"] == "user":
+        st.markdown(
+            f"<div class='message user-message'><div class='bubble'>{message['content']}</div><img src='https://img.icons8.com/color/48/000000/ambulance.png' class='icon'></div>",
+            unsafe_allow_html=True,
+        )
+    elif message["role"] == "assistant":
+        st.markdown(
+            f"<div class='message assistant-message'><img src='https://img.icons8.com/color/48/000000/robot.png' class='icon'><div class='bubble'>{message['content']}</div></div>",
+            unsafe_allow_html=True,
+        )
 
-        # Handle greetings
-        if user_input in ["hello", "hi", "hey"]:
-            response = random.choice(greetings)
-
-        # Handle "my name is" and remember user name
-        elif "my name is" in user_input:
-            user_name = user_input.split("my name is")[-1].strip().capitalize()
-            st.session_state.user_name = user_name
-            response = f"Hello {user_name}! It's nice to meet you. How can I assist you today? 😊"
-
-        # Handle name-related queries
-        elif "do you remember my name" in user_input or "did you remember my name" in user_input:
-            if st.session_state.user_name:
-                response = f"Yes, I remember your name! Your name is {st.session_state.user_name}. 😊"
-            else:
-                response = "I don't seem to remember your name yet. Could you remind me?"
-
-        # Handle emergency-related requests
-        elif "blind" in user_input or "need help" in user_input:
-            response = "I'm so sorry to hear that. Please stay calm. If you need immediate help, call 1122 or ask someone nearby to assist you. Let me know if I can provide more information. 🙏"
-
-        elif "road accident" in user_input or "injured" in user_input:
-            response = "I'm really sorry to hear that! Please stay calm. An ambulance is on its way when you call 1122. Can I help you with anything else in the meantime? 🙏"
-
-        # Handle details about the E-Ambulance service
-        elif "details" in user_input or "e-ambulance" in user_input or "what is e-ambulance" in user_input:
-            response = "The E-Ambulance 1122 service provides 24/7 emergency medical assistance. It’s free and ensures quick response during medical emergencies. You can call 1122 anytime."
-
-        # Handle "is the service free"
-        elif "free" in user_input:
-            response = "Yes, the E-Ambulance service is completely free for all emergencies. You can call 1122 anytime you need medical assistance."
-
-        # Handle fallback queries
-        else:
-            response = "I didn't quite understand that. Can you rephrase your question? Or ask about the E-Ambulance 1122 services. 😊"
-
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        st.session_state["user_input"] = ""  # Reset user input field
-        st.session_state.handled_once = False
-
-# Function for voice-to-text input
+st.markdown("</div>", unsafe_allow_html=True)
+# Voice-to-text functionality
 def voice_to_text():
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
         st.toast("Listening... Speak now!")
         try:
-            recognizer.adjust_for_ambient_noise(source)
-            audio = recognizer.listen(source, timeout=5)
+            recognizer.adjust_for_ambient_noise(source)  # Adjust for ambient noise
+            audio = recognizer.listen(source, timeout=5)  # Wait for up to 5 seconds
             text = recognizer.recognize_google(audio)
             return text
-        except Exception as e:
+        except sr.WaitTimeoutError:
+            st.toast("Timeout: No speech detected.")
             return None
+        except sr.UnknownValueError:
+            st.toast("Sorry, I could not understand the audio.")
+            return None
+        except sr.RequestError as e:
+            st.toast(f"Error with the speech recognition service: {e}")
+            return None
+        
+       # Input handler for restricting responses to JSON-related questions
+def handle_input():
+    user_input = st.session_state.get("user_input", "").strip()
+    if user_input:
+        st.session_state.messages.append({"role": "user", "content": user_input})
 
-# Display chat messages
-st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
-for message in st.session_state.messages:
-    role_class = "user-message" if message["role"] == "user" else "assistant-message"
-    icon = "https://img.icons8.com/color/48/000000/ambulance.png" if message["role"] == "user" else "https://img.icons8.com/color/48/000000/robot.png"
-    st.markdown(
-        f"<div class='message {role_class}'><div class='bubble'>{message['content']}</div><img src='{icon}'></div>" if role_class == "user-message" else
-        f"<div class='message {role_class}'><img src='{icon}'><div class='bubble'>{message['content']}</div></div>",
-        unsafe_allow_html=True,
-    )
-st.markdown("</div>", unsafe_allow_html=True)
+        # Check if the user's query matches any part of the JSON data
+        if any(user_input.lower() in str(value).lower() for value in personal_data.values()):
+            # If the query matches the JSON data, invoke the AI to generate a response
+            response = llm.invoke(st.session_state.messages).content
+        else:
+            # Otherwise, return a predefined response
+            response = "I am sorry, I can only answer questions related to the e-Ambulance system."
 
-# Input and buttons for sending messages
+        # Add the response to the chat history
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.session_state.user_input = ""  # Clear the input field
+
+# Input container
 st.markdown("<div class='input-container'>", unsafe_allow_html=True)
+
+def handle_input():
+    user_input = st.session_state.get("user_input", "")
+    if user_input.strip():  # Check if input is not empty
+        st.session_state.messages.append({"role": "user", "content": user_input})
+        response = llm.invoke(st.session_state.messages).content
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.session_state.user_input = ""  # Clear the input field
+
 col1, col2, col3 = st.columns([8, 1, 1])
 
 with col1:
@@ -135,7 +220,7 @@ with col1:
         placeholder="Type your message here...",
         key="user_input",
         label_visibility="collapsed",
-        on_change=handle_input
+        on_change=handle_input,  # Trigger input handling when Enter is pressed
     )
 
 with col2:
@@ -143,10 +228,11 @@ with col2:
         user_input = voice_to_text()
         if user_input:
             st.session_state.messages.append({"role": "user", "content": user_input})
-            handle_input()
+            response = llm.invoke(st.session_state.messages).content
+            st.session_state.messages.append({"role": "assistant", "content": response})
 
 with col3:
-    if st.button("➤"):
+    if st.button("🩺"):  # Replace the arrow icon with an ambulance-themed icon
         handle_input()
 
 st.markdown("</div>", unsafe_allow_html=True)
