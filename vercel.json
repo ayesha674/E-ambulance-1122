@@ -1,0 +1,8 @@
+{
+    "build": {
+      "src": "chatbot_ui.py",
+      "use": "@vercel/node"
+    },
+    "outputDirectory": "public"
+  }
+  
