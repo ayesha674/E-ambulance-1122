@@ -39,10 +39,12 @@ if "messages" not in st.session_state:
 
 # Custom CSS for the UI
 st.markdown("""
+    
     <style>
+        <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #fef7f7;
+           background: linear-gradient(180deg, #ff4d4d 0%, #ffffff 100%);
             margin: 0;
             padding: 0;
         }
@@ -135,6 +137,44 @@ st.markdown("""
             justify-content: center;
             cursor: pointer;
         }
+            .stButton>button {
+            background-color: #f4c2c2; /* Background color for the buttons */
+            color: black; /* Text color */
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            cursor: pointer;
+        }
+        .stButton>button:hover {
+            background-color: #ff8ba7; /* Hover background color */
+            color: white; /* Hover text color */
+        }
+              /* Change the sidebar background */
+        .css-1d391kg {  /* Default Streamlit sidebar class */
+            background-color: #f4e4e4; /* Light pink */
+        }
+
+        /* Sidebar header and text color */
+        .css-1d391kg h1, .css-1d391kg h2, .css-1d391kg h3, .css-1d391kg p {
+            color: pink;  /* pink for text */
+        }
+
+        /* Customize sidebar buttons */
+        .stButton>button {
+            background-color: #ffb6c1;  /* Light pink for history buttons */
+            color: black;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            padding: 10px;
+        }
+        .stButton>button:hover {
+            background-color: #ff69b4;  /* Hot pink on hover */
+            color: white;
+        }
+    </style>
+    </style>
     </style>
 """, unsafe_allow_html=True)
 
@@ -236,8 +276,5 @@ with col2:
             response = llm.invoke(st.session_state.messages).content
             st.session_state.messages.append({"role": "assistant", "content": response})
 
-with col3:
-    if st.button("🩺"):  # Replace the arrow icon with an ambulance-themed icon
-        handle_input()
 
-st.markdown("</div>", unsafe_allow_html=True)
+
